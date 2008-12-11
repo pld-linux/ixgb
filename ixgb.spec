@@ -32,11 +32,11 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 This package contains the Linux driver for the Intel(R) 10 Gigabit
-adapters.
+adapters with 82597EX chipset.
 
 %description -l pl.UTF-8
 Ten pakiet zawiera sterownik dla Linuksa do kart sieciowych z rodziny
-Intel(R) 10 Gigabit.
+Intel(R) 10 Gigabit opartych o układ 82597EX.
 
 %package -n kernel%{_alt_kernel}-net-ixgb
 Summary:	Intel(R) 10 Gigabit driver for Linux
@@ -51,11 +51,11 @@ Requires(postun):	%releq_kernel
 
 %description -n kernel%{_alt_kernel}-net-ixgb
 This package contains the Linux driver for the Intel(R) 10 Gigabit
-adapters.
+adapters with 82597EX chipset.
 
 %description -n kernel%{_alt_kernel}-net-ixgb -l pl.UTF-8
 Ten pakiet zawiera sterownik dla Linuksa do kart sieciowych z rodziny
-Intel(R) 10 Gigabit.
+Intel(R) 10 Gigabit opartych o układ 82597EX.
 
 %prep
 %setup -q -n %{pname}-%{version}

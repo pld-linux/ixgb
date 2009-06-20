@@ -61,8 +61,8 @@ Intel(R) 10 Gigabit opartych o układ 82597EX.
 %setup -q -n %{pname}-%{version}
 cat > src/Makefile <<'EOF'
 obj-m := ixgb.o
-ixgb-objs := ixgb_ee.o ixgb_hw.o ixgb_param.o ixgb_ethtool.o \
-ixgb_main.o kcompat.o
+ixgb-objs := ixgb_main.o ixgb_hw.o ixgb_ee.o ixgb_param.o \
+ixgb_ethtool.o kcompat.o
 
 EXTRA_CFLAGS=-DDRIVER_IXGB
 EOF

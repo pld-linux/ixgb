@@ -1,0 +1,103 @@
+diff -urN ixgb-1.0.135.orig/src/ixgb.h ixgb-1.0.135/src/ixgb.h
+--- ixgb-1.0.135.orig/src/ixgb.h	2008-01-16 21:00:10.000000000 +0100
++++ ixgb-1.0.135/src/ixgb.h	2009-09-25 22:45:25.002722183 +0200
+@@ -239,6 +239,7 @@
+ extern void ixgb_update_stats(struct ixgb_adapter *);
+ 
+ extern void ixgb_check_options(struct ixgb_adapter *);
++extern void ixgb_assign_netdev_ops(struct net_device *netdev);
+ extern int ethtool_ioctl(struct ifreq *);
+ extern void ixgb_set_ethtool_ops(struct net_device *netdev);
+ 
+diff -urN ixgb-1.0.135.orig/src/ixgb_main.c ixgb-1.0.135/src/ixgb_main.c
+--- ixgb-1.0.135.orig/src/ixgb_main.c	2008-01-16 21:00:10.000000000 +0100
++++ ixgb-1.0.135/src/ixgb_main.c	2009-09-25 23:09:44.925909202 +0200
+@@ -323,6 +323,58 @@
+ 		DPRINTK(PROBE, ERR, "ixgb_init_hw failed.\n");
+ }
+ 
++#ifdef HAVE_NET_DEVICE_OPS
++static const struct net_device_ops ixgb_netdev_ops = {
++	.ndo_open		= &ixgb_open,
++	.ndo_stop		= &ixgb_close,
++	.ndo_start_xmit		= &ixgb_xmit_frame,
++	.ndo_get_stats		= &ixgb_get_stats,
++	.ndo_set_multicast_list = &ixgb_set_multi,
++	.ndo_set_mac_address	= &ixgb_set_mac,
++	.ndo_change_mtu		= &ixgb_change_mtu,
++	.ndo_do_ioctl		= &ixgb_ioctl,
++	.ndo_tx_timeout		= &ixgb_tx_timeout,
++	.ndo_vlan_rx_register	= &ixgb_vlan_rx_register,
++	.ndo_vlan_rx_add_vid	= &ixgb_vlan_rx_add_vid,
++	.ndo_vlan_rx_kill_vid	= &ixgb_vlan_rx_kill_vid,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller	= &ixgb_netpoll,
++#endif
++};
++#endif
++
++void ixgb_assign_netdev_ops(struct net_device *dev)
++{
++	struct ixgb_adapter *adapter;
++	adapter = netdev_priv(dev);
++#ifdef HAVE_NET_DEVICE_OPS
++	dev->netdev_ops = &ixgb_netdev_ops;
++#else
++	dev->open = &ixgb_open;
++	dev->stop = &ixgb_close;
++	dev->hard_start_xmit = &ixgb_xmit_frame;
++	dev->get_stats = &ixgb_get_stats;
++	dev->set_multicast_list = &ixgb_set_multi;
++	dev->set_mac_address = &ixgb_set_mac;
++	dev->change_mtu = &ixgb_change_mtu;
++	dev->do_ioctl = &ixgb_ioctl;
++	dev->tx_timeout = &ixgb_tx_timeout;
++#ifdef NETIF_F_HW_VLAN_TX
++	dev->vlan_rx_register = &ixgb_vlan_rx_register;
++	dev->vlan_rx_add_vid = &ixgb_vlan_rx_add_vid;
++	dev->vlan_rx_kill_vid = &ixgb_vlan_rx_kill_vid;
++#endif
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = &ixgb_netpoll;
++#endif
++#endif
++	ixgb_set_ethtool_ops(dev);
++	dev->watchdog_timeo = 5 * HZ;
++#ifdef CONFIG_IXGB_NAPI
++	netif_napi_add(adapter->netdev, &adapter->napi, ixgb_poll, 64);
++#endif
++}
++
+ /**
+  * ixgb_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -398,28 +450,7 @@
+ 		}
+ 	}
+ 
+-	netdev->open = &ixgb_open;
+-	netdev->stop = &ixgb_close;
+-	netdev->hard_start_xmit = &ixgb_xmit_frame;
+-	netdev->get_stats = &ixgb_get_stats;
+-	netdev->set_multicast_list = &ixgb_set_multi;
+-	netdev->set_mac_address = &ixgb_set_mac;
+-	netdev->change_mtu = &ixgb_change_mtu;
+-	netdev->do_ioctl = &ixgb_ioctl;
+-	ixgb_set_ethtool_ops(netdev);
+-	netdev->tx_timeout = &ixgb_tx_timeout;
+-	netdev->watchdog_timeo = 5 * HZ;
+-#ifdef CONFIG_IXGB_NAPI
+-	netif_napi_add(adapter->netdev, &adapter->napi, ixgb_poll, 64);
+-#endif
+-#ifdef NETIF_F_HW_VLAN_TX
+-	netdev->vlan_rx_register = ixgb_vlan_rx_register;
+-	netdev->vlan_rx_add_vid = ixgb_vlan_rx_add_vid;
+-	netdev->vlan_rx_kill_vid = ixgb_vlan_rx_kill_vid;
+-#endif
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	netdev->poll_controller = ixgb_netpoll;
+-#endif
++	ixgb_assign_netdev_ops(netdev);
+ 
+ 	strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
+ 

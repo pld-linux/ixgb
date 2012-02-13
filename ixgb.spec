@@ -26,6 +26,7 @@ Group:		Base/Kernel
 Source0:	http://dl.sourceforge.net/e1000/%{pname}-%{version}.tar.gz
 # Source0-md5:	400ec2e8477cd43db253e5ed067b6ec4
 Patch0:		%{pname}-2.6.31.patch
+Patch1:		%{pname}-3.x.patch
 URL:		http://sourceforge.net/projects/e1000/
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.20.2}
 BuildRequires:	rpmbuild(macros) >= 1.379
@@ -61,6 +62,7 @@ Intel(R) 10 Gigabit opartych o układ 82597EX.
 %prep
 %setup -q -n %{pname}-%{version}
 %patch0 -p1
+%patch1 -p1
 cat > src/Makefile <<'EOF'
 obj-m := ixgb.o
 ixgb-objs := ixgb_main.o ixgb_hw.o ixgb_ee.o ixgb_param.o \

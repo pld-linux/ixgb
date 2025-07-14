@@ -61,8 +61,8 @@ Intel(R) 10 Gigabit opartych o układ 82597EX.
 
 %prep
 %setup -q -n %{pname}-%{version}
-%patch0 -p1
-%patch1 -p1
+%patch -P0 -p1
+%patch -P1 -p1
 cat > src/Makefile <<'EOF'
 obj-m := ixgb.o
 ixgb-objs := ixgb_main.o ixgb_hw.o ixgb_ee.o ixgb_param.o \
